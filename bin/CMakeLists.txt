@@ -1,3 +1,4 @@
 add_subdirectory(funit)
-install(PROGRAMS funitproc DESTINATION ${dest}/bin)
+add_subdirectory(tests)
 
+install(PROGRAMS funitproc DESTINATION ${dest}/bin)
