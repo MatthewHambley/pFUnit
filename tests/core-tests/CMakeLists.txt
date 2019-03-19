@@ -48,6 +48,24 @@ list(APPEND test_srcs Test_BasicOpenMP.F90)
 add_library(funit_tests STATIC ${test_srcs})
 target_link_libraries(funit_tests other_shared)
 
+add_executable (funit_tests.x serial_tests.F90)
+target_link_libraries(funit_tests.x funit_tests funit)
+
+add_test(NAME old_tests COMMAND funit_tests.x
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+set_property (TEST old_tests
+              PROPERTY FAIL_REGULAR_EXPRESSION
+              "Encountered 1 or more failures/errors during testing")
+
+
+set(REMOTE_EXE remote.x)
+add_executable (${REMOTE_EXE} serialRemoteProgram.F90)
+target_link_libraries(${REMOTE_EXE} funit funit_tests)
+
+add_test(NAME remote_tests COMMAND ${REMOTE_EXE} foo 1
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 
 set(pf_tests
   Test_ExceptionList.pf
@@ -80,7 +98,6 @@ add_pfunit_sources (new_test_srcs ${pf_tests})
 add_library(new_stests ${new_test_srcs})
 target_link_libraries(new_stests other_shared)
 
-
 add_executable (new_tests.x ${PFUNIT_SOURCE_DIR}/include/driver.F90)
 set_source_files_properties(${PFUNIT_SOURCE_DIR}/include/driver.F90 PROPERTIES COMPILE_DEFINITIONS _TEST_SUITES="testSuites.inc")
 target_link_libraries(new_tests.x new_stests funit)
@@ -89,22 +106,3 @@ add_test(NAME new_tests COMMAND new_tests.x
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_property(TEST new_tests PROPERTY FAIL_REGULAR_EXPRESSION
              "Encountered 1 or more failures/errors during testing")
-
-
-add_executable (funit_tests.x serial_tests.F90)
-target_link_libraries(funit_tests.x funit_tests funit)
-
-add_test(NAME old_tests COMMAND funit_tests.x
-         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-
-set_property (TEST old_tests
-    PROPERTY FAIL_REGULAR_EXPRESSION "Encountered 1 or more failures/errors during testing"
-    )
-
-
-set(REMOTE_EXE remote.x)
-add_executable (${REMOTE_EXE} serialRemoteProgram.F90)
-target_link_libraries(${REMOTE_EXE} funit funit_tests)
-
-add_test(NAME remote_tests COMMAND ${REMOTE_EXE} foo 1
-         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
